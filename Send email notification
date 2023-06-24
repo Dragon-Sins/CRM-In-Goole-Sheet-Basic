@@ -1,0 +1,88 @@
+function Notice() {
+  // To get the data from sheet and store in the variable
+  // to call the active spreed sheet or sheet on which your data is stored
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data");
+  // email id of the candidate
+  var emailRange = sheet.getRange("F2:F1000");
+  var candidateemail = emailRange.getValues();
+  // Candidate Names
+  var candidatename = sheet.getRange("D2:D1000");
+  var name = candidatename.getValues();
+  // Contact Number of the Candidate
+  var contactNumber = sheet.getRange("E2:E1000");
+  var number = contactNumber.getValues();
+  // Interview type
+  var interviewType = sheet.getRange("K2:K1000");
+  var interviewtype = interviewType.getValues();
+  // Time of the Interview
+  var time = sheet.getRange("J2:J1000");
+  var interviewtime = time.getValues();
+  // Date of the Interview
+  var interviewdate = sheet.getRange('I2:I1000');
+  var interviewDate = interviewdate.getValues();
+  // email id to whome we have to send email
+  var email = 'Hr@example.com';
+
+
+  // to get todays Date
+  var today = new Date();
+  var year = today.getFullYear();
+  var month = ("0" + (today.getMonth() + 1)).slice(-2);
+  var day = ("0" + today.getDate()).slice(-2);
+  var date = month + "/" + day + "/" + year;
+  // Email Body 
+  var emailBody = '';
+
+  // to get correct date format from the sheet because from sheet we get Sat 'Jun 24 2023 16:00:00 GMT+0521 (India Standard Time)' 
+  // to correct that format we have to split or slice the date in small format and then assign that values as per our requirements
+  function getDate(str) {
+    var date = new Date(str);
+    var m = ("0" + (date.getMonth() + 1)).slice(-2);
+    var d = ("0" + date.getDate()).slice(-2);
+    return [m, d, date.getFullYear()].join("/").trim();
+  }
+  // to get correct time format from the sheet because from sheet we get  'Sat Dec 30 1899 17:00:00 GMT+0521' 
+  function getTime(str) {
+    var date = new Date(str);
+    return date.toLocaleTimeString('en-IN', { hour12: true });
+  }
+
+  // If date of the interview is match with today's date & name column is not empty then the eamil body will create accordingly 
+
+  for (var i = 0; i < name.length; i++) {
+    if (name[i][0] !== "" && getDate(interviewDate[i][0]) == date) {
+      emailBody +=
+        'Candidate Name                     :   ' + name[i][0] + '\n' +
+        'Candidate Ph. No.                   :   ' + number[i][0] + '\n' +
+        'Candidate Email Id                  :   ' + candidateemail[i][0] + '\n' +
+        'Candidate Interview Type        :   ' + interviewtype[i][0] + '\n' +
+        'Candidate Interview Time        :   ' + getTime(interviewtime[i][0]) + '\n' +
+        '-----------------------------------------------------------------------\n\n';
+    }
+      // console.log(date);
+      // console.log(getDate("Intervew date: " + interviewDate[i][0]));
+  }
+  // if email body is not empty then email will send to the recipent
+  if (emailBody !== '') {
+    // email body will create
+    var message =
+      'Hi Dragon,' + '\n' +
+      'This is a reminder mail,' +'\n' +
+      'The following candidate interviews are scheduled for today.'+'\n'+ 'Please take follow-up.' + '\n' +
+      'Please find the Candidate details below: \n' +
+      '-----------------------------------------------------------------------\n' +
+      emailBody +
+      '-----------------------------------------------------------------------\n\n' +
+      'Regards,\nHr';
+
+    // Send email with the same subject and message
+    var subject = 'Today\'s Interview Details';
+    MailApp.sendEmail({
+      to: email,
+      subject: subject,
+      body: message
+    });
+
+    console.log(message);
+  }
+}
